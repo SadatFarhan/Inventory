@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Inventory.Controllers
 {
-    [Authorize(Roles = "Admin")] // শুধুমাত্র "Admin" রোল এই কন্ট্রোলার অ্যাক্সেস করতে পারবে
+    [Authorize(Roles = "Admin")] 
     public class AdminController : Controller
     {
         private readonly AppDbContext _context;
@@ -59,9 +59,75 @@ namespace Inventory.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // In Inventory.Controllers/AdminController.cs
 
-        // ... (existing code)
+
+        // GET: Admin/ChangeRole
+        public async Task<IActionResult> EditUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View(user);
+        }
+
+        // POST: Admin/ChangeRole
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(int id, string role , string userName , string email)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.UserName = userName;
+            user.Email = email;
+            user.Role = role;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        // GET: Admin/DeleteUser/{id}
+        public async Task<IActionResult> DeleteUser(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        // POST: Admin/DeleteUser/{id}
+        [HttpPost, ActionName("DeleteUser")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUserConfirmed(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool UserExists(int id)
+        {
+            return _context.Users.Any(e => e.Id == id);
+        }
+
+
 
         // GET: Admin/CreateInventory
         public IActionResult CreateInventory()
@@ -111,9 +177,17 @@ namespace Inventory.Controllers
             return View(inventories);
         }
 
-        // GET: Admin/EditInventory
-        public async Task<IActionResult> EditInventory(int id)
+        // Inside InventoryController.cs
+
+        // GET: Inventory/Edit/{id}
+       
+        // GET: Admin/EditInventory/{id}
+        public async Task<IActionResult> EditInventory(int? id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
             var inventory = await _context.Inventories.FindAsync(id);
             if (inventory == null)
             {
@@ -122,7 +196,7 @@ namespace Inventory.Controllers
             return View(inventory);
         }
 
-        // POST: Admin/EditInventory
+        // POST: Admin/EditInventory/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditInventory(int id, Inventorys inventory)
@@ -134,12 +208,53 @@ namespace Inventory.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Update(inventory);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(ManageInventories));
+                try
+                {
+                    // This is a safer way to update the entity.
+                    var inventoryToUpdate = await _context.Inventories.FindAsync(id);
+                    if (inventoryToUpdate == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Update only the properties that are editable
+                    inventoryToUpdate.ItemName = inventory.ItemName;
+                    inventoryToUpdate.Quantity = inventory.Quantity;
+                    inventoryToUpdate.Description = inventory.Description;
+                    inventoryToUpdate.ImageUrl = inventory.ImageUrl;
+
+                    _context.Update(inventoryToUpdate);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!InventoryExists(inventory.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                // Redirect back to the admin inventory management page
+                return RedirectToAction(nameof(Index));
             }
             return View(inventory);
         }
+
+
+        private bool InventoryExists(int id)
+        {
+            return _context.Inventories.Any(e => e.Id == id);
+        }
+
+
+
+
+
+
+
 
         // GET: Admin/DeleteInventory
         public async Task<IActionResult> DeleteInventory(int id)

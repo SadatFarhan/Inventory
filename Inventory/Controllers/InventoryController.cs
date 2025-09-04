@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 public class InventoryController : Controller
 {
@@ -19,7 +17,7 @@ public class InventoryController : Controller
         _webHostEnvironment = webHostEnvironment;
     }
 
-    // বিদ্যমান অন্যান্য মেথড যেমন Index, Details, DeleteInventory, ইত্যাদি।
+    
 
     // POST: Inventory/Create
     [HttpPost]
@@ -56,7 +54,7 @@ public class InventoryController : Controller
         }
 
         var inventory = await _context.Inventories
-            .Include(i => i.Comment) // কমেন্টগুলো অন্তর্ভুক্ত করুন
+            .Include(i => i.Comment) 
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (inventory == null)
@@ -74,7 +72,7 @@ public class InventoryController : Controller
     {
         if (ModelState.IsValid)
         {
-            comment.UserId = "current_user_id_here"; // এখানে ব্যবহারকারীর প্রকৃত আইডি নিতে হবে
+            comment.UserId = "current_user_id_here"; 
             _context.Comment.Add(comment);
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", new { id = comment.InventoryId });

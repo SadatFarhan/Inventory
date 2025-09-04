@@ -11,7 +11,7 @@
 
 <div class="row">
     <div class="col-md-6">
-        <h2>Users                <a asp-controller="User" asp-action="Register" class="btn btn-primary float-right">Create New</a>             </h2>
+        <h2>Users                <a asp-controller="Account" asp-action="Register" class="btn btn-primary float-right">Create New</a>             </h2>
         <hr />
         @if (Model.Users != null && Model.Users.Any())
         {
@@ -32,7 +32,10 @@
                             <td>@Html.DisplayFor(modelItem => user.Email)</td>
                             <td>@Html.DisplayFor(modelItem => user.Role)</td>
                             <td>
-                                <a asp-action="ChangeRole" asp-route-id="@user.Id">Change Role</a>
+                                <a asp-action="ChangeRole" asp-route-id="@user.Id">Change Role</a> |
+                                <a asp-action="EditUser" asp-route-id="@user.Id">Edit</a> |
+                                <a asp-action="DeleteUser" asp-route-id="@user.Id">Delete</a>
+
                             </td>
                         </tr>
                     }

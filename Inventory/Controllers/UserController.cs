@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Inventory.Controllers
 {
-    [Authorize(Roles = "User,Admin")] // "User" এবং "Admin" উভয়ই এই কন্ট্রোলার ব্যবহার করতে পারবে
+    [Authorize] 
     public class UserController : Controller
     {
         private readonly AppDbContext _context;
@@ -17,8 +17,6 @@ namespace Inventory.Controllers
             _context = context;
         }
 
-        // User's personal inventory dashboard
-        // Display all inventories to the user
         public async Task<IActionResult> Index()
         {
             var allInventories = await _context.Inventories.Include(i => i.Creator).ToListAsync();

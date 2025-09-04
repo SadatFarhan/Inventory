@@ -22,6 +22,6 @@ namespace Inventory.Models
 
         // This property will store the user's role: "Admin" or "User"
         public string? Role { get; set; } = "User";
-        public string? NameOrEmail { get; internal set; }
+       
     }
 }
