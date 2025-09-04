@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class InventoryController : Controller
 {
@@ -17,7 +19,7 @@ public class InventoryController : Controller
         _webHostEnvironment = webHostEnvironment;
     }
 
-    
+    // বিদ্যমান অন্যান্য মেথড যেমন Index, Details, DeleteInventory, ইত্যাদি।
 
     // POST: Inventory/Create
     [HttpPost]
@@ -54,7 +56,7 @@ public class InventoryController : Controller
         }
 
         var inventory = await _context.Inventories
-            .Include(i => i.Comment) 
+            .Include(i => i.Comment)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (inventory == null)

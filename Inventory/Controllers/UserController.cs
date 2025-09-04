@@ -49,21 +49,36 @@ namespace Inventory.Controllers
         }
 
         // GET: User/EditInventory
-        public async Task<IActionResult> EditInventory(int id)
+        [Authorize] // Requires the user to be logged in
+        public async Task<IActionResult> EditInventory(int? id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var inventory = await _context.Inventories.FirstOrDefaultAsync(i => i.Id == id && i.CreatedById.ToString() == userId);
-
-            if (inventory == null)
+            if (id == null)
             {
                 return NotFound();
             }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized(Index); // User is authenticated but somehow has no ID
+            }
+
+            // Fetch the inventory and  check ownership
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.Id == id && i.CreatedById.ToString() == userId);
+
+            if (inventory == null)
+            {
+                return NotFound(); // Either not found or not owned by this user
+            }
+
             return View(inventory);
         }
 
-        // POST: User/EditInventory
+        // POST: Inventory/EditInventory/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize] // Requires the user to be logged in
         public async Task<IActionResult> EditInventory(int id, Inventorys inventory)
         {
             if (id != inventory.Id)
@@ -71,19 +86,56 @@ namespace Inventory.Controllers
                 return NotFound();
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (inventory.CreatedById.ToString() != userId)
+            // Fetch the original inventory from the database
+            var originalInventory = await _context.Inventories.FindAsync(id);
+            if (originalInventory == null)
             {
-                return Forbid();
+                return NotFound();
+            }
+
+            // Verify that the current user is the owner of this inventory
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (originalInventory.CreatedById.ToString() != userId)
+            {
+                return Forbid(); // Return a 403 Forbidden status
             }
 
             if (ModelState.IsValid)
             {
-                _context.Update(inventory);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    // Manually update the properties on the original object
+                    originalInventory.ItemName = inventory.ItemName;
+                    originalInventory.Quantity = inventory.Quantity;
+                    originalInventory.Description = inventory.Description;
+                    originalInventory.ImageUrl = inventory.ImageUrl;
+
+                    // Save changes to the original entity
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Index)); 
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    
+                    if (!InventoryExists(inventory.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
+            // If ModelState is invalid, return the view with the provided model
             return View(inventory);
+        }
+
+        // Helper method to check if an inventory item exists
+        private bool InventoryExists(int id)
+        {
+            return _context.Inventories.Any(e => e.Id == id);
         }
 
         // View all inventories for all users
