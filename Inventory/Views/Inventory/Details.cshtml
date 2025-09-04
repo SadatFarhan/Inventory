@@ -1,0 +1,45 @@
+﻿@model Inventory.Models.Inventorys
+
+
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="items" role="tabpanel" aria-labelledby="items-tab">
+        </div>
+    <div class="tab-pane fade" id="chat" role="tabpanel" aria-labelledby="chat-tab"></div>
+    <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab"></div>
+    <div class="tab-pane fade" id="customid" role="tabpanel" aria-labelledby="customid-tab"></div>
+    <div class="tab-pane fade" id="fields" role="tabpanel" aria-labelledby="fields-tab"></div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Load the initial 'Items' tab content
+            loadTabContent('items', '@Url.Action("GetItemsPartial", "Inventory", new { inventoryId = Model.Id })');
+
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                var targetTabId = $(e.target).attr('data-bs-target').substring(1);
+                var url = '';
+
+                switch (targetTabId) {
+                    case 'items':
+                        url = '@Url.Action("GetItemsPartial", "Inventory", new { inventoryId = Model.Id })';
+                        break;
+                    case 'chat':
+                        url = '@Url.Action("GetChatPartial", "Inventory", new { inventoryId = Model.Id })';
+                        break;
+                    // Add cases for other tabs
+                }
+
+                if (url) {
+                    loadTabContent(targetTabId, url);
+                }
+            });
+        });
+
+        function loadTabContent(tabId, url) {
+            $.get(url, function(data) {
+                $('#' + tabId).html(data);
+            });
+        }
+    </script>
+}
