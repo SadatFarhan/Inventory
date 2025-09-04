@@ -59,6 +59,51 @@ namespace Inventory.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // In Inventory.Controllers/AdminController.cs
+
+        // ... (existing code)
+
+        // GET: Admin/CreateInventory
+        public IActionResult CreateInventory()
+        {
+            return View();
+        }
+
+        // POST: Admin/CreateInventory
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateInventory([Bind("ItemName,Category,Description,Quantity")] Inventorys inventory)
+        {
+            // Check if the model state is valid and if the user is authenticated
+            if (ModelState.IsValid && User.Identity.IsAuthenticated)
+            {
+                // Get the current user's ID from the claims
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // Find the user object in the database
+                var creator = await _context.Users.FindAsync(int.Parse(userId));
+
+                if (creator == null)
+                {
+                    return Unauthorized(); // Or handle the error appropriately
+                }
+
+                // Assign the Creator and CreatorId to the inventory item
+                inventory.Creator = creator;
+                inventory.CreatorId = creator.Id;
+
+                _context.Add(inventory);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index)); // Redirect back to the Admin Dashboard
+            }
+            return View(inventory);
+        }
+
+        // ... (existing code)
+
+
+
+
         // Admin can manage all inventories
         public async Task<IActionResult> ManageInventories()
         {

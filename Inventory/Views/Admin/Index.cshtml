@@ -6,9 +6,12 @@
 
 <h1>Admin Dashboard</h1>
 
+
+<div class="clearfix"></div> <!-- Clear the float -->
+
 <div class="row">
     <div class="col-md-6">
-        <h2>Users</h2>
+        <h2>Users                <a asp-controller="User" asp-action="Register" class="btn btn-primary float-right">Create New</a>             </h2>
         <hr />
         @if (Model.Users != null && Model.Users.Any())
         {
@@ -41,9 +44,11 @@
             <p>No users found.</p>
         }
     </div>
-
     <div class="col-md-6">
-        <h2>Inventory Items</h2>
+        <h2>
+            Inventory Items
+            <a asp-controller="User" asp-action="CreateInventory" class="btn btn-primary float-right">Create New</a>
+        </h2>
         <hr />
         @if (Model.InventoryItems != null && Model.InventoryItems.Any())
         {
@@ -51,7 +56,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                      
+                        <th>Category</th>
                         <th>Quantity</th>
                         <th>Created By</th>
                         <th>Actions</th>
@@ -62,12 +67,12 @@
                     {
                         <tr>
                             <td>@Html.DisplayFor(modelItem => item.ItemName)</td>
-                           
+                            <td>@Html.DisplayFor(modelItem => item.Description)</td>
                             <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
                             <td>@Html.DisplayFor(modelItem => item.Creator.UserName)</td>
                             <td>
-                                <a asp-action="EditInventory" asp-route-id="@item.Id">Edit</a> |
-                                <a asp-action="DeleteInventory" asp-route-id="@item.Id">Delete</a>
+                                <a asp-controller="Admin" asp-action="EditInventory" asp-route-id="@item.Id">Edit</a> |
+                                <a asp-controller="Admin" asp-action="DeleteInventory" asp-route-id="@item.Id">Delete</a>
                             </td>
                         </tr>
                     }
