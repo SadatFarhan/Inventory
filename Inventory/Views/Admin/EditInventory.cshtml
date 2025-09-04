@@ -1,12 +1,18 @@
 ﻿@model Inventory.Models.Inventorys
 
-<h4>Inventory</h4>
+@{
+    ViewData["Title"] = "EditInventory";
+}
+
+<h1>EditInventory</h1>
+
+<h4>Inventorys</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="EditInventory">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-           
+      
             <div class="form-group">
                 <label asp-for="ItemName" class="control-label"></label>
                 <input asp-for="ItemName" class="form-control" />
@@ -22,19 +28,19 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-         
+          
             <div class="form-group">
                 <label asp-for="ImageUrl" class="control-label"></label>
                 <input asp-for="ImageUrl" class="form-control" />
                 <span asp-validation-for="ImageUrl" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Items" class="control-label"></label>
-                <input asp-for="Items" class="form-control" />
-                <span asp-validation-for="Items" class="text-danger"></span>
+                <label asp-for="CreatorId" class="control-label"></label>
+                <input asp-for="CreatorId" class="form-control" />
+                <span asp-validation-for="CreatorId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
