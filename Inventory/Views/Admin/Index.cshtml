@@ -3,88 +3,91 @@
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
-
-<h1>Admin Dashboard</h1>
-
-
-<div class="clearfix"></div> <!-- Clear the float -->
-
-<div class="row">
-    <div class="col-md-6">
-        <h2>Users                <a asp-controller="Account" asp-action="Register" class="btn btn-primary float-right">Create New</a>             </h2>
-        <hr />
-        @if (Model.Users != null && Model.Users.Any())
-        {
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model.Users)
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">User List</h5>
+                    <div class="d-flex align-items-center">
+                        <input type="text" class="form-control form-control-sm ms-2" placeholder="Search...">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-sm ms-2">Create New</a>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush">
+                    @if (Model.Users != null && Model.Users.Any())
                     {
-                        <tr>
-                            <td>@Html.DisplayFor(modelItem => user.UserName)</td>
-                            <td>@Html.DisplayFor(modelItem => user.Email)</td>
-                            <td>@Html.DisplayFor(modelItem => user.Role)</td>
-                            <td>
-                                <a asp-action="ChangeRole" asp-route-id="@user.Id">Change Role</a> |
-                                <a asp-action="EditUser" asp-route-id="@user.Id">Edit</a> |
-                                <a asp-action="DeleteUser" asp-route-id="@user.Id">Delete</a>
+                        @foreach (var user in Model.Users)
+                        {
+                            <label class="list-group-item d-flex align-items-center">
+                              
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1">UserName: @user.UserName</h6>
+                                    </div>
+                                    <p class="mb-1"> Email:    @user.Email</p> 
 
-                            </td>
-                        </tr>
+                                    <p class="mb-1">Role: @user.Role</p>
+                                    @foreach (var item in Model.InventoryItems)
+                                    {
+                                        @if (item.CreatedById == user.Id)
+                                        {
+                                            <p class="mb-1">Created Item: @item.ItemName</p>
+                                        }
+                                        
+                                    }
+                                    <div class="d-flex justify-content-end mt-2">
+                                        <a asp-controller="Admin" asp-action="ChangeRole" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info me-2">Change Role</a>
+                                        <a asp-controller="Admin" asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                        <a asp-controller="Admin" asp-action="DeleteUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    </div>
+                                </div>
+                            </label>
+                        }
                     }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>No users found.</p>
-        }
-    </div>
-    <div class="col-md-6">
-        <h2>
-            Inventory Items
-            <a asp-controller="User" asp-action="CreateInventory" class="btn btn-primary float-right">Create New</a>
-        </h2>
-        <hr />
-        @if (Model.InventoryItems != null && Model.InventoryItems.Any())
-        {
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Quantity</th>
-                        <th>Created By</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.InventoryItems)
+                    else
                     {
-                        <tr>
-                            <td>@Html.DisplayFor(modelItem => item.ItemName)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Creator.UserName)</td>
-                            <td>
-                                <a asp-controller="Admin" asp-action="EditInventory" asp-route-id="@item.Id">Edit</a> |
-                                <a asp-controller="Admin" asp-action="DeleteInventory" asp-route-id="@item.Id">Delete</a>
-                            </td>
-                        </tr>
+                        <div class="list-group-item">No users found.</div>
                     }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>No inventory items found.</p>
-        }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Inventory Items</h5>
+                    <div class="d-flex align-items-center">
+                        <input type="text" class="form-control form-control-sm ms-5" placeholder="Search...">
+                    </div>
+                    <a asp-controller="User" asp-action="CreateInventory" class="btn btn-primary btn-sm">Create New</a>
+
+                </div>
+                <ul class="list-group list-group-flush">
+                    @if (Model.InventoryItems != null && Model.InventoryItems.Any())
+                    {
+                        @foreach (var item in Model.InventoryItems)
+                        {
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">@item.ItemName</h6>
+                                    <small class="text-muted">Quantity: @item.Quantity</small>
+                                </div>
+                                <p class="mb-1">Category: @item.Description</p>
+                                <small class="text-muted">Created By: @item.Creator.UserName</small>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <a asp-controller="Admin" asp-action="EditInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                    <a asp-controller="Admin" asp-action="DeleteInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <div class="list-group-item">No inventory items found.</div>
+                    }
+                </ul>
+            </div>
+        </div>
     </div>
 </div>

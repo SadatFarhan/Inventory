@@ -19,8 +19,6 @@ public class InventoryController : Controller
         _webHostEnvironment = webHostEnvironment;
     }
 
-    // বিদ্যমান অন্যান্য মেথড যেমন Index, Details, DeleteInventory, ইত্যাদি।
-
     // POST: Inventory/Create
     [HttpPost]
     [ValidateAntiForgeryToken]

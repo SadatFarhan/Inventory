@@ -11,47 +11,31 @@
 </p>
 
 <table class="table">
-    <thead>
-        <tr>
-           
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().ItemName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Quantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Creator)
-            </th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+    
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-
-                <td>
-                    @Html.DisplayFor(modelItem => item.ItemName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Quantity)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Creator.UserName)
-                </td>
-                <td>
-                    <a asp-action="EditInventory" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="DeleteInventory" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                 
+                    <ul class="list-group list-group-flush">
+                  
+                                <li class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@item.ItemName</h6>
+                                        <small class="text-muted">Quantity: @item.Quantity</small>
+                                    </div>
+                                    <p class="mb-1">Category: @item.Description</p>
+                                    <small class="text-muted">Created By: @item.Creator.UserName</small>
+                                    <div class="d-flex justify-content-end mt-2">
+                                        <a asp-controller="User" asp-action="EditInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                        <a asp-controller="Admin" asp-action="DeleteInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    </div>
+                                </li>
+                 
+                    </ul>
+                </div>
+            </div>
         }
     </tbody>
 </table>
