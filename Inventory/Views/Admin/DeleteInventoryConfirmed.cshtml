@@ -1,10 +1,10 @@
 ﻿@model Inventory.Models.Inventorys
 
 @{
-    ViewData["Title"] = "DeleteInventory";
+    ViewData["Title"] = "DeleteInventoryConfirmed";
 }
 
-<h1>DeleteInventory</h1>
+<h1>DeleteInventoryConfirmed</h1>
 
 <h3>Are you sure you want to delete this?</h3>
 <div>
@@ -55,7 +55,7 @@
         </dd>
     </dl>
     
-    <form asp-action="DeleteInventory">
+    <form asp-action="DeleteInventoryConfirmed">
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
     </form>

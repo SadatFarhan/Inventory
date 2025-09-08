@@ -1,4 +1,4 @@
-﻿@model List<Inventory.Models.Inventorys>
+﻿@model Inventory.Models.UserDashboardViewModel
 
 @{
     ViewData["Title"] = "Inventory Index";
@@ -10,32 +10,62 @@
     <a asp-action="CreateInventory" class="btn btn-primary">Create New Inventory</a>
 </p>
 
-<table class="table">
-    
-    <tbody>
-        @foreach (var item in Model)
+@if (Model.MyInventories.Any())
+{
+    <h2>My Inventories</h2>
+    <div class="row">
+        @foreach (var item in Model.MyInventories)
         {
-            <div class="col-md-6">
+            <div class="col-md-6 mb-3">
                 <div class="card shadow-sm">
-                 
                     <ul class="list-group list-group-flush">
-                  
-                                <li class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">@item.ItemName</h6>
-                                        <small class="text-muted">Quantity: @item.Quantity</small>
-                                    </div>
-                                    <p class="mb-1">Category: @item.Description</p>
-                                    <small class="text-muted">Created By: @item.Creator.UserName</small>
-                                    <div class="d-flex justify-content-end mt-2">
-                                        <a asp-controller="User" asp-action="EditInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
-                                        <a asp-controller="User" asp-action="DeleteInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                                    </div>
-                                </li>
-                 
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">@item.ItemName</h6>
+                                <small class="text-muted">Quantity: @item.Quantity</small>
+                            </div>
+                            <p class="mb-1">Category: @item.Description</p>
+                            <small class="text-muted">Created By: @item.Creator.UserName</small>
+                            <div class="d-flex justify-content-end mt-2">
+                                <a asp-controller="User" asp-action="EditInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                <a asp-controller="User" asp-action="DeleteInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
         }
-    </tbody>
-</table>
+    </div>
+}
+else
+{
+    <p class="mt-4">You have not created any inventories yet.</p>
+}
+<hr />
+@if (Model.OtherInventories.Any())
+{
+    <h2>Other Users' Inventories</h2>
+    <div class="row">
+        @foreach (var item in Model.OtherInventories)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">@item.ItemName</h6>
+                                <small class="text-muted">Quantity: @item.Quantity</small>
+                            </div>
+                            <p class="mb-1">Category: @item.Description</p>
+                            <small class="text-muted">Created By: @item.Creator.UserName</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="mt-4">No other users have created inventories yet.</p>
+}

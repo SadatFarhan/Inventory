@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Inventory.Controllers
 {
-    [Authorize] 
+    [Authorize]
     public class UserController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,9 +19,39 @@ namespace Inventory.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var allInventories = await _context.Inventories.Include(i => i.Creator).ToListAsync();
-            return View(allInventories); // The controller is returning a list
+            // Get the ID of the currently logged-in user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+               
+                return Unauthorized();
+            }
+
+            // Convert the string userId to an int
+            var currentUserId = int.Parse(userId);
+
+            // Fetch inventories created by the current user
+            var myInventories = await _context.Inventories
+                .Include(i => i.Creator)
+                .Where(i => i.CreatedById == currentUserId)
+                .ToListAsync();
+
+            // Fetch inventories created by other users
+            var otherInventories = await _context.Inventories
+                .Include(i => i.Creator)
+                .Where(i => i.CreatedById != currentUserId)
+                .ToListAsync();
+
+            // Create a view model to hold both lists
+            var viewModel = new UserDashboardViewModel
+            {
+                MyInventories = myInventories,
+                OtherInventories = otherInventories
+            };
+
+            return View(viewModel);
         }
+
         // GET: User/CreateInventory
         public IActionResult CreateInventory()
         {
@@ -49,7 +79,7 @@ namespace Inventory.Controllers
         }
 
         // GET: User/EditInventory
-        [Authorize] // Requires the user to be logged in
+        [Authorize] 
         public async Task<IActionResult> EditInventory(int? id)
         {
             if (id == null)
@@ -60,10 +90,10 @@ namespace Inventory.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
-                return Unauthorized(Index); // User is authenticated but somehow has no ID
+                return Unauthorized(); // User is authenticated but somehow has no ID
             }
 
-            // Fetch the inventory and  check ownership
+            // Fetch the inventory and check ownership
             var inventory = await _context.Inventories
                 .FirstOrDefaultAsync(i => i.Id == id && i.CreatedById.ToString() == userId);
 
@@ -113,11 +143,10 @@ namespace Inventory.Controllers
                     // Save changes to the original entity
                     await _context.SaveChangesAsync();
 
-                    return RedirectToAction(nameof(Index)); 
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    
                     if (!InventoryExists(inventory.Id))
                     {
                         return NotFound();

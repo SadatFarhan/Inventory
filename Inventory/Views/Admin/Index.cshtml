@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-6">
@@ -27,7 +28,7 @@
                         <table class="table table-hover table-striped">
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th><input type="checkbox" id="selectAllUsers"></th>
                                     <th>Username & Email</th>
                                     <th>Role</th>
                                 </tr>
@@ -69,57 +70,80 @@
                         <input type="text" class="form-control form-control-sm ms-2" placeholder="Search...">
                     </div>
                 </div>
-                <div class="list-group list-group-flush">
-                    @if (Model.InventoryItems != null && Model.InventoryItems.Any())
-                    {
-                        @foreach (var item in Model.InventoryItems)
-                        {
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">@item.ItemName</h6>
-                                    <small class="text-muted">Quantity: @item.Quantity</small>
-                                </div>
-                                <p class="mb-1">Category: @item.Description</p>
-                                <small class="text-muted">Created By: @item.Creator.UserName</small>
-                                <div class="d-flex justify-content-end mt-2">
-                                    <a asp-controller="Admin" asp-action="EditInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
-                                    <a asp-controller="Admin" asp-action="DeleteInventory" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                                </div>
-                            </li>
-                        }
-                    }
-                    else
-                    {
-                        <div class="list-group-item">No inventory items found.</div>
-                    }
+                <div class="mb-3 d-flex justify-content-end gap-2">
+                    <button id="editInventoryButton" class="btn btn-primary btn-sm" disabled>Edit Inventory</button>
+                    <button id="deleteInventoriesButton" class="btn btn-danger btn-sm" disabled>Delete Selected</button>
                 </div>
+
+                <form id="inventoryActionsForm" method="post" action="">
+                    <input type="hidden" name="selectedInventoryIds" id="selectedInventoryIds" />
+                    <div class="list-group list-group-flush">
+                        @if (Model.InventoryItems != null && Model.InventoryItems.Any())
+                        {
+                            @foreach (var item in Model.InventoryItems)
+                            {
+                                <li class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        <input type="checkbox" class="inventory-checkbox me-2" data-id="@item.Id">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">@item.ItemName</h6>
+                                                <small class="text-muted">Quantity: @item.Quantity</small>
+                                            </div>
+                                            <p class="mb-1">Category: @item.Description</p>
+                                            <small class="text-muted">Created By: @item.Creator.UserName</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <div class="list-group-item">No inventory items found.</div>
+                        }
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Function to enable/disable buttons based on checked checkboxes
-            function toggleButtons() {
+            // Function to handle user list button states
+            function toggleUserButtons() {
                 const checkedCount = $('.user-checkbox:checked').length;
-                $('#changeRoleButton').prop('disabled', checkedCount !== 1); // Only enable if exactly one user is selected
-                $('#editUserButton').prop('disabled', checkedCount !== 1); // Only enable if exactly one user is selected
-                $('#deleteUserButton').prop('disabled', checkedCount === 0); // Enable if one or more users are selected
+                $('#changeRoleButton').prop('disabled', checkedCount !== 1);
+                $('#editUserButton').prop('disabled', checkedCount !== 1);
+                $('#deleteUserButton').prop('disabled', checkedCount === 0);
             }
 
-            // 'Select All' checkbox logic
-            $('#selectAll').change(function() {
+            // Function to handle inventory list button states
+            function toggleInventoryButtons() {
+                const checkedCount = $('.inventory-checkbox:checked').length;
+                $('#editInventoryButton').prop('disabled', checkedCount !== 1);
+                $('#deleteInventoriesButton').prop('disabled', checkedCount === 0);
+            }
+
+            // 'Select All' users checkbox logic
+            $('#selectAllUsers').change(function() {
                 $('.user-checkbox').prop('checked', $(this).prop('checked'));
-                toggleButtons();
+                toggleUserButtons();
             });
 
             // Individual user checkbox logic
             $('.user-checkbox').change(function() {
-                toggleButtons();
+                toggleUserButtons();
             });
 
-            // Button click handlers
+            // Individual inventory checkbox logic
+            $('.inventory-checkbox').change(function() {
+                toggleInventoryButtons();
+            });
+
+            // User button click handlers
             $('#changeRoleButton').click(function() {
                 const userId = $('.user-checkbox:checked').data('id');
                 window.location.href = `/Admin/ChangeRole/${userId}`;
@@ -131,14 +155,13 @@
             });
 
             $('#deleteUserButton').click(function(e) {
-                e.preventDefault(); // Prevent default button action
+                e.preventDefault();
                 const selectedIds = $('.user-checkbox:checked').map(function() {
                     return $(this).data('id');
                 }).get();
 
                 if (selectedIds.length > 0) {
                     if (confirm(`Are you sure you want to delete ${selectedIds.length} user(s)?`)) {
-                        // Set the hidden input value and submit the form
                         $('#selectedUserIds').val(selectedIds.join(','));
                         const form = $('#userActionsForm');
                         form.attr('action', '/Admin/DeleteUsers');
@@ -147,8 +170,35 @@
                 }
             });
 
+            // Inventory button click handlers
+            $('#editInventoryButton').click(function() {
+                const inventoryId = $('.inventory-checkbox:checked').data('id');
+                window.location.href = `/Admin/EditInventory/${inventoryId}`;
+            });
+
+                      $('#deleteInventoriesButton').click(function(e) {
+            e.preventDefault();
+            const selectedIds = $('.inventory-checkbox:checked').map(function() {
+                return $(this).data('id');
+            }).get();
+
+            if (selectedIds.length > 0) {
+                if (confirm(`Are you sure you want to delete ${selectedIds.length} inventory item(s)?`)) {
+                    // Put the comma-separated IDs into the hidden input
+                    $('#selectedInventoryIds').val(selectedIds.join(','));
+
+                    // Set the form's action and submit it
+                    const form = $('#inventoryActionsForm');
+                    // Change this line to the correct action name
+                    form.attr('action', '/Admin/DeleteInventories');
+                    form.submit();
+                }
+            }
+        });
+
             // Initial button state check on page load
-            toggleButtons();
+            toggleUserButtons();
+            toggleInventoryButtons();
         });
     </script>
 }

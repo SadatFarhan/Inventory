@@ -110,20 +110,30 @@ namespace Inventory.Controllers
             return View(user);
         }
 
-        // POST: Admin/DeleteUser/{id}
-        [HttpPost, ActionName("DeleteUser")]
+       
+        // POST: Admin/DeleteUsers
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUserConfirmed(int id)
+        public async Task<IActionResult> DeleteUsers(string selectedUserIds)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
+            if (string.IsNullOrEmpty(selectedUserIds))
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
+
+            var idsToDelete = selectedUserIds.Split(',').Select(int.Parse).ToList();
+            var users = await _context.Users.Where(u => idsToDelete.Contains(u.Id)).ToListAsync();
+
+            if (!users.Any())
+            {
+                return NotFound();
+            }
+
+            _context.Users.RemoveRange(users);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
-
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);
@@ -179,9 +189,6 @@ namespace Inventory.Controllers
             return View(inventories);
         }
 
-        // Inside InventoryController.cs
-
-        // GET: Inventory/Edit/{id}
        
         // GET: Admin/EditInventory/{id}
         public async Task<IActionResult> EditInventory(int? id)
@@ -239,7 +246,6 @@ namespace Inventory.Controllers
                         throw;
                     }
                 }
-                // Redirect back to the admin inventory management page
                 return RedirectToAction(nameof(Index));
             }
             return View(inventory);
@@ -254,11 +260,8 @@ namespace Inventory.Controllers
 
 
 
-
-
-
-
-        // GET: Admin/DeleteInventory
+        // Existing single-item deletion for a GET request
+      
         public async Task<IActionResult> DeleteInventory(int id)
         {
             var inventory = await _context.Inventories.FindAsync(id);
@@ -269,30 +272,50 @@ namespace Inventory.Controllers
             return View(inventory);
         }
 
-        // POST: Admin/DeleteInventory
-        [HttpPost, ActionName("DeleteInventory")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        // The new action to handle multiple user deletions
-        [HttpPost]
-        
-        public async Task<IActionResult> DeleteUsers(string selectedUserIds)
+        public async Task<IActionResult> DeleteInventoryConfirmed(int id)
         {
-            if (string.IsNullOrEmpty(selectedUserIds))
+            var inventory = await _context.Inventories.FirstOrDefaultAsync(m => m.Id == id);
+            if (inventory == null)
+            {
+                return NotFound();
+            }
+
+            _context.Inventories.Remove(inventory);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // New bulk deletion action for a POST request
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteInventories(string selectedInventoryIds)
+        {
+            if (string.IsNullOrEmpty(selectedInventoryIds))
             {
                 return RedirectToAction(nameof(Index));
             }
 
-            var ids = selectedUserIds.Split(',').Select(int.Parse).ToList();
+            var idsToDelete = selectedInventoryIds.Split(',').Select(int.Parse).ToList();
 
-            var usersToDelete = await _context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+            var inventories = await _context.Inventories
+              .Where(i => idsToDelete.Contains(i.Id))
+              .ToListAsync();
 
-            if (usersToDelete != null && usersToDelete.Any())
+            if (!inventories.Any())
             {
-                _context.Users.RemoveRange(usersToDelete);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
+
+            _context.Inventories.RemoveRange(inventories);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
+
+
+
+      
     }
 }
