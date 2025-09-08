@@ -31,5 +31,8 @@ namespace Inventory.Models
         public ICollection<Comments>? Comment { get; set; }
         public ICollection<Items>? Items { get; set; }
         public int CreatorId { get; internal set; }
+
+       
+
     }
 }

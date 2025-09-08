@@ -9,5 +9,6 @@
         public int InventoryId { get; set; }
         [System.ComponentModel.DataAnnotations.Schema.ForeignKey("InventoryId")]
         public Inventorys? Inventory { get; set; }
+
     }
 }

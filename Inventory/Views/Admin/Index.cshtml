@@ -6,64 +6,70 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">User List</h5>
+            <div class="card shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0">User List</h5>
                     <div class="d-flex align-items-center">
-                        <input type="text" class="form-control form-control-sm ms-2" placeholder="Search...">
                         <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-sm ms-2">Create New</a>
+                        <input type="text" class="form-control form-control-sm ms-2" placeholder="Search...">
                     </div>
                 </div>
-                <div class="list-group list-group-flush">
-                    @if (Model.Users != null && Model.Users.Any())
-                    {
-                        @foreach (var user in Model.Users)
-                        {
-                            <label class="list-group-item d-flex align-items-center">
-                              
-                                <div class="w-100">
-                                    <div class="d-flex justify-content-between">
-                                        <h6 class="mb-1">UserName: @user.UserName</h6>
-                                    </div>
-                                    <p class="mb-1"> Email:    @user.Email</p> 
 
-                                    <p class="mb-1">Role: @user.Role</p>
-                                    @foreach (var item in Model.InventoryItems)
-                                    {
-                                        @if (item.CreatedById == user.Id)
-                                        {
-                                            <p class="mb-1">Created Item: @item.ItemName</p>
-                                        }
-                                        
-                                    }
-                                    <div class="d-flex justify-content-end mt-2">
-                                        <a asp-controller="Admin" asp-action="ChangeRole" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info me-2">Change Role</a>
-                                        <a asp-controller="Admin" asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary me-2">Edit</a>
-                                        <a asp-controller="Admin" asp-action="DeleteUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                                    </div>
-                                </div>
-                            </label>
-                        }
-                    }
-                    else
-                    {
-                        <div class="list-group-item">No users found.</div>
-                    }
+                <div class="mb-3 d-flex justify-content-end gap-2">
+                    <button id="changeRoleButton" class="btn btn-info btn-sm" disabled>Change Role</button>
+                    <button id="editUserButton" class="btn btn-primary btn-sm" disabled>Edit User</button>
+                    <button id="deleteUserButton" class="btn btn-danger btn-sm" disabled>Delete User</button>
                 </div>
+
+                <form id="userActionsForm" method="post" action="">
+                    <input type="hidden" name="selectedUserIds" id="selectedUserIds" />
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>Username & Email</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Users != null && Model.Users.Any())
+                                {
+                                    @foreach (var user in Model.Users)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="user-checkbox" data-id="@user.Id"></td>
+                                            <td>
+                                                <strong class="d-block">@user.UserName</strong>
+                                                <small class="text-muted d-block">@user.Email</small>
+                                            </td>
+                                            <td>@user.Role</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center">No users found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
             </div>
         </div>
 
         <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Inventory Items</h5>
+            <div class="card shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0">Inventory Items</h5>
                     <div class="d-flex align-items-center">
-                        <input type="text" class="form-control form-control-sm ms-5" placeholder="Search...">
+                        <a asp-controller="User" asp-action="CreateInventory" class="btn btn-primary btn-sm">Create New</a>
+                        <input type="text" class="form-control form-control-sm ms-2" placeholder="Search...">
                     </div>
-                    <a asp-controller="User" asp-action="CreateInventory" class="btn btn-primary btn-sm">Create New</a>
-
                 </div>
-                <ul class="list-group list-group-flush">
+                <div class="list-group list-group-flush">
                     @if (Model.InventoryItems != null && Model.InventoryItems.Any())
                     {
                         @foreach (var item in Model.InventoryItems)
@@ -86,8 +92,63 @@
                     {
                         <div class="list-group-item">No inventory items found.</div>
                     }
-                </ul>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</div> 
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Function to enable/disable buttons based on checked checkboxes
+            function toggleButtons() {
+                const checkedCount = $('.user-checkbox:checked').length;
+                $('#changeRoleButton').prop('disabled', checkedCount !== 1); // Only enable if exactly one user is selected
+                $('#editUserButton').prop('disabled', checkedCount !== 1); // Only enable if exactly one user is selected
+                $('#deleteUserButton').prop('disabled', checkedCount === 0); // Enable if one or more users are selected
+            }
+
+            // 'Select All' checkbox logic
+            $('#selectAll').change(function() {
+                $('.user-checkbox').prop('checked', $(this).prop('checked'));
+                toggleButtons();
+            });
+
+            // Individual user checkbox logic
+            $('.user-checkbox').change(function() {
+                toggleButtons();
+            });
+
+            // Button click handlers
+            $('#changeRoleButton').click(function() {
+                const userId = $('.user-checkbox:checked').data('id');
+                window.location.href = `/Admin/ChangeRole/${userId}`;
+            });
+
+            $('#editUserButton').click(function() {
+                const userId = $('.user-checkbox:checked').data('id');
+                window.location.href = `/Admin/EditUser/${userId}`;
+            });
+
+            $('#deleteUserButton').click(function(e) {
+                e.preventDefault(); // Prevent default button action
+                const selectedIds = $('.user-checkbox:checked').map(function() {
+                    return $(this).data('id');
+                }).get();
+
+                if (selectedIds.length > 0) {
+                    if (confirm(`Are you sure you want to delete ${selectedIds.length} user(s)?`)) {
+                        // Set the hidden input value and submit the form
+                        $('#selectedUserIds').val(selectedIds.join(','));
+                        const form = $('#userActionsForm');
+                        form.attr('action', '/Admin/DeleteUsers');
+                        form.submit();
+                    }
+                }
+            });
+
+            // Initial button state check on page load
+            toggleButtons();
+        });
+    </script>
+}

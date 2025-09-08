@@ -1,4 +1,5 @@
 ﻿using Inventory.Data;
+using Inventory.Migrations;
 using Inventory.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace Inventory.Controllers
         {
             var adminDashboard = new AdminDashboard
             {
+               
                 Users = await _context.Users.ToListAsync(),
                 InventoryItems = await _context.Inventories.Include(i => i.Creator).ToListAsync()
             };
@@ -270,15 +272,27 @@ namespace Inventory.Controllers
         // POST: Admin/DeleteInventory
         [HttpPost, ActionName("DeleteInventory")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        // The new action to handle multiple user deletions
+        [HttpPost]
+        
+        public async Task<IActionResult> DeleteUsers(string selectedUserIds)
         {
-            var inventory = await _context.Inventories.FindAsync(id);
-            if (inventory != null)
+            if (string.IsNullOrEmpty(selectedUserIds))
             {
-                _context.Inventories.Remove(inventory);
+                return RedirectToAction(nameof(Index));
+            }
+
+            var ids = selectedUserIds.Split(',').Select(int.Parse).ToList();
+
+            var usersToDelete = await _context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+
+            if (usersToDelete != null && usersToDelete.Any())
+            {
+                _context.Users.RemoveRange(usersToDelete);
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(ManageInventories));
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

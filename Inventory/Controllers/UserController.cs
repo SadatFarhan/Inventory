@@ -145,5 +145,50 @@ namespace Inventory.Controllers
             var allInventories = await _context.Inventories.Include(i => i.Creator).ToListAsync();
             return View(allInventories);
         }
+
+        // GET: User/DeleteInventory/{id}
+        [Authorize]
+        public async Task<IActionResult> DeleteInventory(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var inventory = await _context.Inventories
+                .Include(i => i.Creator)
+                .FirstOrDefaultAsync(m => m.Id == id && m.CreatedById.ToString() == userId);
+
+            if (inventory == null)
+            {
+                return NotFound(); // Not found or not owned by the user
+            }
+
+            return View(inventory);
+        }
+
+        // POST: User/DeleteInventory/{id}
+        [HttpPost, ActionName("DeleteInventory")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteInventoryConfirmed(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(m => m.Id == id && m.CreatedById.ToString() == userId);
+
+            if (inventory == null)
+            {
+                return NotFound(); // Not found or not owned by the user
+            }
+
+            _context.Inventories.Remove(inventory);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+
     }
 }
