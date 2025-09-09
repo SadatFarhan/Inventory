@@ -177,9 +177,6 @@ namespace Inventory.Controllers
             return View(inventory);
         }
 
-        // ... (existing code)
-
-
 
 
         // Admin can manage all inventories

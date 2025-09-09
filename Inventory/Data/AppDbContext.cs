@@ -12,7 +12,9 @@ namespace Inventory.Data
 
         public DbSet<Inventorys> Inventories { get; set; }
         public DbSet<Comments> Comment { get; set; }
-        public DbSet<Items> Items { get; set; }
+        public DbSet<Items> Items { get; set; } 
+        public DbSet<CustomField> CustomFields { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Users>().ToTable("User");

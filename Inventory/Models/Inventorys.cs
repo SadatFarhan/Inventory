@@ -30,9 +30,17 @@ namespace Inventory.Models
         public string? ImageUrl { get; internal set; }
         public ICollection<Comments>? Comment { get; set; }
         public ICollection<Items>? Items { get; set; }
+  
         public int CreatorId { get; internal set; }
-
-       
+        public List<CustomFieldViewModel> CustomFields { get; set; } = new List<CustomFieldViewModel>();
+        public class CustomFieldViewModel
+        {
+            public int Id { get; set; }
+            public string? Title { get; set; }
+            public string? FieldType { get; set; }
+            public string? Description { get; set; }
+            public bool ShowInTableView { get; set; }
+        }
 
     }
 }

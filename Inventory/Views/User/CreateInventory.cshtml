@@ -6,13 +6,12 @@
 
 <h1>Create Inventory</h1>
 
-
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="CreateInventory">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-         
+
             <div class="form-group">
                 <label asp-for="ItemName" class="control-label"></label>
                 <input asp-for="ItemName" class="form-control" />
@@ -28,15 +27,34 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-        
+
             <div class="form-group">
                 <label asp-for="ImageUrl" class="control-label"></label>
                 <input asp-for="ImageUrl" class="form-control" />
                 <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </div> 
+            </div>
             <hr />
+         
+
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <label for="ItemName">Inventory Name</label>
+                <input asp-for="ItemName" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="CustomFields">Custom ID Format</label>
+                <input asp-for="CustomFields" class="form-control" placeholder="e.g., COMP-2025-E74FA329-001" />
+            </div>
+
+            <hr />
+            <h4>Custom Fields</h4>
+            <div id="customFieldsContainer">
+            </div>
+
+            <button type="button" class="btn btn-secondary mt-2" id="addFieldButton">Add Custom Field</button>
+            <br />
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">Create Inventory</button>
             </div>
         </form>
     </div>
@@ -47,5 +65,66 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let fieldIndex = 0;
+            const container = document.getElementById('customFieldsContainer');
+            const addButton = document.getElementById('addFieldButton');
+
+            addButton.addEventListener('click', function () {
+                const fieldDiv = document.createElement('div');
+                fieldDiv.classList.add('custom-field-form', 'border', 'p-3', 'mt-3');
+                fieldDiv.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Field ${fieldIndex + 1}</h5>
+                        <button type="button" class="btn btn-sm btn-danger remove-field-btn">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" name="CustomFields[${fieldIndex}].Title" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Field Type</label>
+                        <select name="CustomFields[${fieldIndex}].FieldType" class="form-control">
+                            <option value="string">Single-line text</option>
+                            <option value="multiline">Multi-line text</option>
+                            <option value="link">Document/Image Link</option>
+                            
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label>Date/Time</label>
+                        <input type="text" name="CustomFields[${fieldIndex}].Date/Time" class="form-control" required />
+                    </div>
+                `;
+                container.appendChild(fieldDiv);
+                fieldIndex++;
+            });
+
+            container.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-field-btn')) {
+                    e.target.closest('.custom-field-form').remove();
+                    reIndexFields();
+                }
+            });
+
+            function reIndexFields() {
+                const fields = container.querySelectorAll('.custom-field-form');
+                fieldIndex = 0;
+                fields.forEach(field => {
+                    field.querySelectorAll('input, select').forEach(input => {
+                        const oldName = input.getAttribute('name');
+                        if (oldName) {
+                            const newName = oldName.replace(/\[\d+\]/, `[${fieldIndex}]`);
+                            input.setAttribute('name', newName);
+                        }
+                    });
+                    fieldIndex++;
+                });
+            }
+        });
+    </script>
 }
