@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace Inventory.Controllers
 {
-    [AllowAnonymous] // এই কন্ট্রোলারের অ্যাকশনগুলো সবার জন্য উন্মুক্ত
+    [AllowAnonymous] 
     public class AccountController : Controller
     {
         private readonly AppDbContext _context;
@@ -34,25 +34,25 @@ namespace Inventory.Controllers
                 {
                     UserName = registerModel.UserName,
                     Email = registerModel.Email,
-                    Password = registerModel.Password, // You should hash this!
+                    Password = registerModel.Password,
                     Role = "User"
                 };
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Login");
             }
-            return View(registerModel); // Now returns the correct type on failure
+            return View(registerModel);
         }
-        // GET: Account/Login
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
 
-        // POST: Account/Login
         [HttpPost]
+       
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(Login loginModel) // <-- Change parameter to use the correct Login model
+        public async Task<IActionResult> Login(Login loginModel) 
         {
             // Check if the form data is valid according to the Login model's attributes
             if (!ModelState.IsValid)
